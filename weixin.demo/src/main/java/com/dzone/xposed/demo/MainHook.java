@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -56,6 +57,19 @@ public class MainHook implements IXposedHookLoadPackage {
                 if (text.startsWith("微信号：")) {
                     param.args[0] = "微信号：已隐藏";
                 }
+            }
+        });
+
+        //微信关键字替换为QQ
+        XposedHelpers.findAndHookMethod(TextView.class, "setText", CharSequence.class, new XC_MethodReplacement() {
+            @Override
+            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws
+                    Throwable {
+                //微信内所有微信关键字替换为QQ       
+                String text = String.valueOf(methodHookParam.args[0]);
+                text = text.replaceAll("微信", "QQ");
+                methodHookParam.args[0] = text;
+                return XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
             }
         });
     }
