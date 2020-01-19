@@ -1,0 +1,2 @@
+include ':weixin.demo'
+rootProject.name='XposedDemo'
