@@ -52,10 +52,19 @@ public class MainHook implements IXposedHookLoadPackage {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                if (param.args.length == 0) {
+                    return;
+                }
+                if (param.args[0] == null) {
+                    return;
+                }
                 String text = String.valueOf(param.args[0]);
                 Log.e(getTag(), text);
                 if (text.startsWith("微信号：")) {
                     param.args[0] = "微信号：已隐藏";
+                }
+                if (text.startsWith("QQ号：")) {
+                    param.args[0] = "QQ号：已隐藏";
                 }
             }
         });
@@ -63,12 +72,13 @@ public class MainHook implements IXposedHookLoadPackage {
         //微信关键字替换为QQ
         XposedHelpers.findAndHookMethod(TextView.class, "setText", CharSequence.class, new XC_MethodReplacement() {
             @Override
-            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws
-                    Throwable {
-                //微信内所有微信关键字替换为QQ       
-                String text = String.valueOf(methodHookParam.args[0]);
-                text = text.replaceAll("微信", "QQ");
-                methodHookParam.args[0] = text;
+            protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
+                //微信内所有微信关键字替换为QQ
+                if (methodHookParam.args[0] != null) {
+                    String text = String.valueOf(methodHookParam.args[0]);
+                    text = text.replaceAll("微信", "QQ");
+                    methodHookParam.args[0] = text;
+                }
                 return XposedBridge.invokeOriginalMethod(methodHookParam.method, methodHookParam.thisObject, methodHookParam.args);
             }
         });
